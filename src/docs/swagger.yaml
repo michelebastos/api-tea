@@ -1,0 +1,1111 @@
+openapi: 3.0.3
+info:
+  title: API de Apoio ao Autismo
+  description: |
+    REST API voltada ao apoio de pessoas autistas (TEA), familiares, cuidadores e profissionais.
+    
+    A API auxilia no acompanhamento de rotinas, registro de crises, preferências sensoriais, 
+    atividades terapêuticas, comunicação alternativa e organização do dia a dia.
+    
+    ## Propósito Social
+    Esta API foi criada com foco em inclusão e acessibilidade, respeitando a diversidade 
+    neurocognitiva e apoiando o bem-estar de pessoas no espectro autista.
+    
+    ## Autenticação
+    Todos os endpoints (exceto /auth/login) requerem autenticação via Bearer Token JWT.
+    
+    **Credenciais padrão:**
+    - Email: admin@autismo.com
+    - Senha: 123456
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: suporte@autismo.com
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desenvolvimento local
+
+tags:
+  - name: Autenticação
+    description: Endpoints de autenticação
+  - name: Perfis
+    description: Gestão de perfis de pessoas autistas
+  - name: Rotinas
+    description: Gestão de rotinas diárias
+  - name: Preferências Sensoriais
+    description: Registro de sensibilidades e preferências
+  - name: Crises
+    description: Registro de crises e gatilhos
+  - name: Atividades Terapêuticas
+    description: Gestão de atividades e terapias
+  - name: Comunicação Alternativa
+    description: Frases e significados para comunicação
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtido através do endpoint /auth/login
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Erro ao processar solicitação"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "admin@autismo.com"
+        password:
+          type: string
+          format: password
+          example: "123456"
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    Profile:
+      type: object
+      required:
+        - name
+        - age
+        - supportLevel
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        name:
+          type: string
+          example: "João Silva"
+        age:
+          type: integer
+          minimum: 0
+          example: 12
+        supportLevel:
+          type: string
+          enum: [leve, moderado, alto]
+          example: "moderado"
+        diagnosisDate:
+          type: string
+          format: date
+          example: "2020-03-15"
+        notes:
+          type: string
+          example: "Adora música e atividades ao ar livre"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProfileCreate:
+      type: object
+      required:
+        - name
+        - age
+        - supportLevel
+      properties:
+        name:
+          type: string
+          example: "João Silva"
+        age:
+          type: integer
+          minimum: 0
+          example: 12
+        supportLevel:
+          type: string
+          enum: [leve, moderado, alto]
+          example: "moderado"
+        diagnosisDate:
+          type: string
+          format: date
+          example: "2020-03-15"
+        notes:
+          type: string
+          example: "Adora música e atividades ao ar livre"
+
+    Routine:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Escovar os dentes"
+        description:
+          type: string
+          example: "Após o café da manhã"
+        time:
+          type: string
+          pattern: '^([01]\d|2[0-3]):([0-5]\d)$'
+          example: "08:00"
+        dayOfWeek:
+          type: string
+          enum: [segunda, terça, quarta, quinta, sexta, sábado, domingo]
+          example: "segunda"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RoutineCreate:
+      type: object
+      required:
+        - profileId
+        - title
+      properties:
+        profileId:
+          type: string
+          format: uuid
+        title:
+          type: string
+          example: "Escovar os dentes"
+        description:
+          type: string
+          example: "Após o café da manhã"
+        time:
+          type: string
+          example: "08:00"
+        dayOfWeek:
+          type: string
+          enum: [segunda, terça, quarta, quinta, sexta, sábado, domingo]
+
+    SensoryPreference:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        soundSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+          example: "alta"
+        lightSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+          example: "média"
+        touchSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+          example: "alta"
+        foodRestrictions:
+          type: array
+          items:
+            type: string
+          example: ["glúten", "lactose"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SensoryPreferenceCreate:
+      type: object
+      required:
+        - profileId
+        - soundSensitivity
+        - lightSensitivity
+        - touchSensitivity
+      properties:
+        profileId:
+          type: string
+          format: uuid
+        soundSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+        lightSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+        touchSensitivity:
+          type: string
+          enum: [baixa, média, alta]
+        foodRestrictions:
+          type: array
+          items:
+            type: string
+
+    Meltdown:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        trigger:
+          type: string
+          example: "barulho alto"
+        description:
+          type: string
+          example: "Durante festa de aniversário"
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        occurredAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    MeltdownCreate:
+      type: object
+      required:
+        - profileId
+        - trigger
+        - intensity
+        - occurredAt
+      properties:
+        profileId:
+          type: string
+          format: uuid
+        trigger:
+          type: string
+          example: "barulho alto"
+        description:
+          type: string
+          example: "Durante festa de aniversário"
+        intensity:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        occurredAt:
+          type: string
+          format: date-time
+
+    Activity:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Terapia ocupacional"
+        objective:
+          type: string
+          example: "Desenvolver habilidades motoras"
+        durationMinutes:
+          type: integer
+          minimum: 1
+          example: 60
+        professional:
+          type: string
+          example: "Dra. Maria Santos"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ActivityCreate:
+      type: object
+      required:
+        - profileId
+        - name
+        - durationMinutes
+      properties:
+        profileId:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Terapia ocupacional"
+        objective:
+          type: string
+          example: "Desenvolver habilidades motoras"
+        durationMinutes:
+          type: integer
+          minimum: 1
+          example: 60
+        professional:
+          type: string
+          example: "Dra. Maria Santos"
+
+    Communication:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        profileId:
+          type: string
+          format: uuid
+        phrase:
+          type: string
+          example: "Eu quero água"
+        meaning:
+          type: string
+          example: "Estou com sede"
+        category:
+          type: string
+          enum: [necessidade, emoção, dor, lazer]
+          example: "necessidade"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CommunicationCreate:
+      type: object
+      required:
+        - profileId
+        - phrase
+        - meaning
+        - category
+      properties:
+        profileId:
+          type: string
+          format: uuid
+        phrase:
+          type: string
+          example: "Eu quero água"
+        meaning:
+          type: string
+          example: "Estou com sede"
+        category:
+          type: string
+          enum: [necessidade, emoção, dor, lazer]
+          example: "necessidade"
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Autenticação
+      summary: Realizar login
+      description: Autentica um usuário e retorna um token JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles:
+    post:
+      tags:
+        - Perfis
+      summary: Criar novo perfil
+      description: Cria um novo perfil de pessoa autista
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '201':
+          description: Perfil criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags:
+        - Perfis
+      summary: Listar todos os perfis
+      description: Retorna uma lista com todos os perfis cadastrados
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de perfis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Profile'
+        '401':
+          description: Não autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /profiles/{id}:
+    get:
+      tags:
+        - Perfis
+      summary: Buscar perfil por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Perfil encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Perfil não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags:
+        - Perfis
+      summary: Atualizar perfil
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileCreate'
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Perfil não encontrado
+
+    delete:
+      tags:
+        - Perfis
+      summary: Excluir perfil
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Perfil excluído com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Perfil não encontrado
+
+  /routines:
+    post:
+      tags:
+        - Rotinas
+      summary: Criar nova rotina
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutineCreate'
+      responses:
+        '201':
+          description: Rotina criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+
+    get:
+      tags:
+        - Rotinas
+      summary: Listar rotinas
+      description: Lista todas as rotinas, com filtro opcional por perfil
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filtrar por perfil
+      responses:
+        '200':
+          description: Lista de rotinas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Routine'
+
+  /routines/{id}:
+    get:
+      tags:
+        - Rotinas
+      summary: Buscar rotina por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rotina encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+        '404':
+          description: Rotina não encontrada
+
+    put:
+      tags:
+        - Rotinas
+      summary: Atualizar rotina
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoutineCreate'
+      responses:
+        '200':
+          description: Rotina atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Routine'
+
+    delete:
+      tags:
+        - Rotinas
+      summary: Excluir rotina
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rotina excluída com sucesso
+
+  /sensory-preferences:
+    post:
+      tags:
+        - Preferências Sensoriais
+      summary: Criar preferência sensorial
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensoryPreferenceCreate'
+      responses:
+        '201':
+          description: Preferência criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryPreference'
+
+    get:
+      tags:
+        - Preferências Sensoriais
+      summary: Listar preferências sensoriais
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de preferências
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SensoryPreference'
+
+  /sensory-preferences/{id}:
+    get:
+      tags:
+        - Preferências Sensoriais
+      summary: Buscar preferência por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Preferência encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryPreference'
+
+    put:
+      tags:
+        - Preferências Sensoriais
+      summary: Atualizar preferência
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SensoryPreferenceCreate'
+      responses:
+        '200':
+          description: Preferência atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensoryPreference'
+
+    delete:
+      tags:
+        - Preferências Sensoriais
+      summary: Excluir preferência
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Preferência excluída
+
+  /meltdowns:
+    post:
+      tags:
+        - Crises
+      summary: Registrar crise
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MeltdownCreate'
+      responses:
+        '201':
+          description: Crise registrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meltdown'
+
+    get:
+      tags:
+        - Crises
+      summary: Listar crises
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de crises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Meltdown'
+
+  /meltdowns/{id}:
+    get:
+      tags:
+        - Crises
+      summary: Buscar crise por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Crise encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Meltdown'
+
+    delete:
+      tags:
+        - Crises
+      summary: Excluir registro de crise
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Crise excluída
+
+  /activities:
+    post:
+      tags:
+        - Atividades Terapêuticas
+      summary: Criar atividade
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityCreate'
+      responses:
+        '201':
+          description: Atividade criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+
+    get:
+      tags:
+        - Atividades Terapêuticas
+      summary: Listar atividades
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: query
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de atividades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+
+  /activities/{id}:
+    get:
+      tags:
+        - Atividades Terapêuticas
+      summary: Buscar atividade por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Atividade encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+
+    put:
+      tags:
+        - Atividades Terapêuticas
+      summary: Atualizar atividade
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivityCreate'
+      responses:
+        '200':
+          description: Atividade atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+
+    delete:
+      tags:
+        - Atividades Terapêuticas
+      summary: Excluir atividade
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Atividade excluída
+
+  /communication:
+    post:
+      tags:
+        - Comunicação Alternativa
+      summary: Criar registro de comunicação
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationCreate'
+      responses:
+        '201':
+          description: Comunicação criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Communication'
+
+    get:
+      tags:
+        - Comunicação Alternativa
+      summary: Listar comunicações
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [necessidade, emoção, dor, lazer]
+      responses:
+        '200':
+          description: Lista de comunicações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Communication'
+
+  /communication/{id}:
+    get:
+      tags:
+        - Comunicação Alternativa
+      summary: Buscar comunicação por ID
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Comunicação encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Communication'
+
+    put:
+      tags:
+        - Comunicação Alternativa
+      summary: Atualizar comunicação
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationCreate'
+      responses:
+        '200':
+          description: Comunicação atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Communication'
+
+    delete:
+      tags:
+        - Comunicação Alternativa
+      summary: Excluir comunicação
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Comunicação excluída

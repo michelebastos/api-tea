@@ -1,0 +1,60 @@
+name: CI - Testes Automatizados
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Configurar Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Instalar dependências
+      run: npm ci
+
+    - name: Executar testes unitários
+      run: npm run test:unit
+
+    - name: Executar testes de integração
+      run: npm run test:integration
+
+    - name: Gerar relatório de cobertura
+      run: npm run test:coverage
+
+    - name: Verificar cobertura mínima
+      run: |
+        if [ -f coverage/lcov.info ]; then
+          echo "Cobertura gerada com sucesso"
+        else
+          echo "Falha ao gerar cobertura"
+          exit 1
+        fi
+
+    - name: Upload relatório de cobertura
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage/lcov.info
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Publicar relatório de cobertura
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage/
