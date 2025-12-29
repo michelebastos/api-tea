@@ -35,8 +35,8 @@ describe('ProfileController', () => {
 
       await profileController.create(req, res, next);
 
-      expect(res.statusCode).to.equal(201);
-      expect(res.body).to.deep.equal(createdProfile);
+      expect(res.status.calledWith(201)).to.be.true;
+      expect(res.json.calledWith(createdProfile)).to.be.true;
       expect(serviceStub.calledOnce).to.be.true;
       expect(next.called).to.be.false;
     });
@@ -77,8 +77,8 @@ describe('ProfileController', () => {
 
       await profileController.getAll(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(profiles);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(profiles)).to.be.true;
       expect(next.called).to.be.false;
     });
   });
@@ -102,8 +102,8 @@ describe('ProfileController', () => {
 
       await profileController.getById(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(profile);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(profile)).to.be.true;
       expect(next.called).to.be.false;
     });
 
@@ -144,8 +144,8 @@ describe('ProfileController', () => {
 
       await profileController.update(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(updatedProfile);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(updatedProfile)).to.be.true;
       expect(next.called).to.be.false;
     });
   });
@@ -163,8 +163,8 @@ describe('ProfileController', () => {
 
       await profileController.delete(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(result);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(result)).to.be.true;
       expect(next.called).to.be.false;
     });
   });

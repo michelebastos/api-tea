@@ -36,8 +36,8 @@ describe('MeltdownController', () => {
 
       await meltdownController.create(req, res, next);
 
-      expect(res.statusCode).to.equal(201);
-      expect(res.body).to.deep.equal(createdMeltdown);
+      expect(res.status.calledWith(201)).to.be.true;
+      expect(res.json.calledWith(createdMeltdown)).to.be.true;
       expect(next.called).to.be.false;
     });
 
@@ -84,8 +84,8 @@ describe('MeltdownController', () => {
 
       await meltdownController.getAll(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(meltdowns);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(meltdowns)).to.be.true;
       expect(serviceStub.calledWith({
         profileId: '123e4567-e89b-12d3-a456-426614174000',
         startDate: '2024-01-01',
@@ -107,8 +107,8 @@ describe('MeltdownController', () => {
 
       await meltdownController.getById(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(meltdown);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(meltdown)).to.be.true;
     });
   });
 
@@ -125,8 +125,8 @@ describe('MeltdownController', () => {
 
       await meltdownController.delete(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(result);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(result)).to.be.true;
     });
   });
 });

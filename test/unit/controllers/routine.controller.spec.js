@@ -34,8 +34,8 @@ describe('RoutineController', () => {
 
       await routineController.create(req, res, next);
 
-      expect(res.statusCode).to.equal(201);
-      expect(res.body).to.deep.equal(createdRoutine);
+      expect(res.status.calledWith(201)).to.be.true;
+      expect(res.json.calledWith(createdRoutine)).to.be.true;
       expect(next.called).to.be.false;
     });
 
@@ -74,8 +74,8 @@ describe('RoutineController', () => {
 
       await routineController.getAll(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(routines);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(routines)).to.be.true;
     });
 
     it('deve filtrar rotinas por profileId', async () => {
@@ -89,7 +89,7 @@ describe('RoutineController', () => {
 
       await routineController.getAll(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
+      expect(res.status.calledWith(200)).to.be.true;
       expect(serviceStub.calledWith({ profileId })).to.be.true;
     });
   });
@@ -107,8 +107,8 @@ describe('RoutineController', () => {
 
       await routineController.getById(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(routine);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(routine)).to.be.true;
     });
   });
 
@@ -126,8 +126,8 @@ describe('RoutineController', () => {
 
       await routineController.update(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(updatedRoutine);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(updatedRoutine)).to.be.true;
     });
   });
 
@@ -144,8 +144,8 @@ describe('RoutineController', () => {
 
       await routineController.delete(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal(result);
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith(result)).to.be.true;
     });
   });
 });

@@ -1,5 +1,7 @@
 const request = require('supertest');
 const app = require('../../src/app');
+const jwt = require('jsonwebtoken');
+const config = require('../../src/config/env');
 
 /**
  * Helper para autenticação em testes de integração
@@ -8,6 +10,19 @@ const app = require('../../src/app');
 class AuthHelper {
   constructor() {
     this.token = null;
+  }
+
+  /**
+   * Gera um token JWT de teste sem fazer requisição
+   * Útil para testes de integração
+   */
+  static generateTestToken(userId = 'user-test-1') {
+    const token = jwt.sign(
+      { userId: userId },
+      config.jwtSecret,
+      { expiresIn: config.jwtExpiresIn }
+    );
+    return `Bearer ${token}`;
   }
 
   async authenticate() {

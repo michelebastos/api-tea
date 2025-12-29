@@ -30,8 +30,8 @@ describe('AuthController', () => {
 
       await authController.login(req, res, next);
 
-      expect(res.statusCode).to.equal(200);
-      expect(res.body).to.deep.equal({ token: expectedToken });
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.json.calledWith({ token: expectedToken })).to.be.true;
       expect(authServiceStub.calledOnce).to.be.true;
       expect(authServiceStub.calledWith('admin@autismo.com', '123456')).to.be.true;
       expect(next.called).to.be.false;
@@ -54,7 +54,7 @@ describe('AuthController', () => {
 
       expect(next.calledOnce).to.be.true;
       expect(next.calledWith(error)).to.be.true;
-      expect(res.statusCode).to.equal(200); // Não alterado pois erro foi passado para next
+      expect(res.status.called).to.be.false; // Não chamado pois erro foi passado para next
     });
 
     it('deve chamar next com erro quando service lança exceção', async () => {
