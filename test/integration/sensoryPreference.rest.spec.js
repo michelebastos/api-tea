@@ -5,7 +5,7 @@ const app = require('../../src/app');
 const store = require('../../src/data/store');
 const AuthHelper = require('../helpers/authHelper');
 
-describe('SensoryPreference REST API - Integration Tests', () => {
+describe('SensoryPreference REST API', () => {
   let authToken;
   let testProfileId;
 

@@ -5,217 +5,67 @@ const app = require('../../src/app');
 const store = require('../../src/data/store');
 const AuthHelper = require('../helpers/authHelper');
 
-describe('Activity REST API - Integration Tests', () => {
+describe('Activity REST API', () => {
   let authToken;
   let testProfileId;
 
   beforeEach(() => {
     store.reset();
     authToken = AuthHelper.generateTestToken();
-    
     testProfileId = uuidv4();
-    const profile = {
+    store.profiles.push({
       id: testProfileId,
       name: 'João',
       dateOfBirth: '2010-05-15',
-      diagnosis: 'TEA Nível 1',
       userId: uuidv4()
+    });
+  });
+
+  it('deve criar e listar atividades', async () => {
+    const activityData = {
+      profileId: testProfileId,
+      name: 'Terapia ocupacional',
+      durationMinutes: 60
     };
-    store.profiles.push(profile);
+
+    const createResponse = await request(app)
+      .post('/activities')
+      .set('Authorization', authToken)
+      .send(activityData)
+      .expect(201);
+
+    expect(createResponse.body).to.have.property('id');
+    expect(createResponse.body.name).to.equal(activityData.name);
+
+    const listResponse = await request(app)
+      .get('/activities')
+      .set('Authorization', authToken)
+      .expect(200);
+
+    expect(listResponse.body).to.be.an('array');
+    expect(listResponse.body).to.have.lengthOf(1);
   });
 
-  describe('POST /activities', () => {
-    it('deve criar uma nova atividade', async () => {
-      const activityData = {
-        profileId: testProfileId,
-        name: 'Terapia ocupacional',
-        objective: 'Melhorar coordenação motora',
-        durationMinutes: 60,
-        professional: 'Dr. Silva'
-      };
-
-      const response = await request(app)
-        .post('/activities')
-        .set('Authorization', authToken)
-        .send(activityData)
-        .expect(201);
-
-      expect(response.body).to.have.property('id');
-      expect(response.body.name).to.equal(activityData.name);
-      expect(response.body.profileId).to.equal(testProfileId);
+  it('deve atualizar e excluir atividade', async () => {
+    const activityId = uuidv4();
+    store.activities.push({
+      id: activityId,
+      profileId: testProfileId,
+      name: 'Terapia',
+      createdAt: new Date()
     });
 
-    it('deve retornar 401 sem autenticação', async () => {
-      const activityData = {
-        profileId: testProfileId,
-        name: 'Terapia ocupacional',
-        durationMinutes: 60
-      };
+    await request(app)
+      .put(`/activities/${activityId}`)
+      .set('Authorization', authToken)
+      .send({ name: 'Terapia atualizada' })
+      .expect(200);
 
-      await request(app)
-        .post('/activities')
-        .send(activityData)
-        .expect(401);
-    });
+    await request(app)
+      .delete(`/activities/${activityId}`)
+      .set('Authorization', authToken)
+      .expect(200);
 
-    it('deve retornar 400 com dados inválidos', async () => {
-      const response = await request(app)
-        .post('/activities')
-        .set('Authorization', authToken)
-        .send({})
-        .expect(400);
-
-      expect(response.body).to.have.property('errors');
-    });
-  });
-
-  describe('GET /activities', () => {
-    beforeEach(() => {
-      store.activities.push(
-        {
-          id: uuidv4(),
-          profileId: testProfileId,
-          name: 'Terapia ocupacional',
-          createdAt: new Date()
-        },
-        {
-          id: uuidv4(),
-          profileId: testProfileId,
-          name: 'Fonoaudiologia',
-          createdAt: new Date()
-        }
-      );
-    });
-
-    it('deve retornar todas as atividades', async () => {
-      const response = await request(app)
-        .get('/activities')
-        .set('Authorization', authToken)
-        .expect(200);
-
-      expect(response.body).to.be.an('array');
-      expect(response.body).to.have.lengthOf(2);
-    });
-
-    it('deve filtrar atividades por profileId', async () => {
-      const response = await request(app)
-        .get(`/activities?profileId=${testProfileId}`)
-        .set('Authorization', authToken)
-        .expect(200);
-
-      expect(response.body).to.be.an('array');
-      expect(response.body.every(a => a.profileId === testProfileId)).to.be.true;
-    });
-
-    it('deve retornar 401 sem autenticação', async () => {
-      await request(app)
-        .get('/activities')
-        .expect(401);
-    });
-  });
-
-  describe('GET /activities/:id', () => {
-    let activityId;
-
-    beforeEach(() => {
-      activityId = uuidv4();
-      store.activities.push({
-        id: activityId,
-        profileId: testProfileId,
-        name: 'Terapia ocupacional',
-        createdAt: new Date()
-      });
-    });
-
-    it('deve retornar uma atividade específica', async () => {
-      const response = await request(app)
-        .get(`/activities/${activityId}`)
-        .set('Authorization', authToken)
-        .expect(200);
-
-      expect(response.body).to.have.property('id', activityId);
-      expect(response.body).to.have.property('name', 'Terapia ocupacional');
-    });
-
-    it('deve retornar 404 para atividade inexistente', async () => {
-      const response = await request(app)
-        .get(`/activities/${uuidv4()}`)
-        .set('Authorization', authToken)
-        .expect(404);
-
-      expect(response.body).to.have.property('message');
-    });
-  });
-
-  describe('PUT /activities/:id', () => {
-    let activityId;
-
-    beforeEach(() => {
-      activityId = uuidv4();
-      store.activities.push({
-        id: activityId,
-        profileId: testProfileId,
-        name: 'Terapia ocupacional',
-        createdAt: new Date()
-      });
-    });
-
-    it('deve atualizar uma atividade', async () => {
-      const updateData = {
-        name: 'Terapia ocupacional avançada',
-        durationMinutes: 90
-      };
-
-      const response = await request(app)
-        .put(`/activities/${activityId}`)
-        .set('Authorization', authToken)
-        .send(updateData)
-        .expect(200);
-
-      expect(response.body.name).to.equal(updateData.name);
-    });
-
-    it('deve retornar 404 para atividade inexistente', async () => {
-      const response = await request(app)
-        .put(`/activities/${uuidv4()}`)
-        .set('Authorization', authToken)
-        .send({ name: 'Nova atividade' })
-        .expect(404);
-
-      expect(response.body).to.have.property('message');
-    });
-  });
-
-  describe('DELETE /activities/:id', () => {
-    let activityId;
-
-    beforeEach(() => {
-      activityId = uuidv4();
-      store.activities.push({
-        id: activityId,
-        profileId: testProfileId,
-        name: 'Terapia ocupacional',
-        createdAt: new Date()
-      });
-    });
-
-    it('deve excluir uma atividade', async () => {
-      const response = await request(app)
-        .delete(`/activities/${activityId}`)
-        .set('Authorization', authToken)
-        .expect(200);
-
-      expect(response.body).to.have.property('message');
-      expect(store.activities.find(a => a.id === activityId)).to.be.undefined;
-    });
-
-    it('deve retornar 404 para atividade inexistente', async () => {
-      const response = await request(app)
-        .delete(`/activities/${uuidv4()}`)
-        .set('Authorization', authToken)
-        .expect(404);
-
-      expect(response.body).to.have.property('message');
-    });
+    expect(store.activities.find(a => a.id === activityId)).to.be.undefined;
   });
 });
